@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HPAR — Hierarchical Path-Addressed Retrieval</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:         #f7f5f0;
+  --surface:    #edeae3;
+  --border:     #d8d3c8;
+  --text:       #1c1a17;
+  --muted:      #6e6a62;
+  --accent:     #3d6644;
+  --accent-dim: #3d664410;
+  --accent-mid: #3d664425;
+  --code-bg:    #e6e2d8;
+  --code-text:  #2a4430;
+  --s1:8px; --s2:12px; --s3:16px; --s4:24px;
+  --s5:32px; --s6:48px; --s7:64px; --s8:96px;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg:         #0e0e0c;
+    --surface:    #171714;
+    --border:     #2c2c26;
+    --text:       #e8e3d8;
+    --muted:      #88837a;
+    --accent:     #72b87c;
+    --accent-dim: #72b87c10;
+    --accent-mid: #72b87c22;
+    --code-bg:    #191c16;
+    --code-text:  #8fd496;
+  }
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Satoshi', system-ui, -apple-system, sans-serif;
+  font-size: 18px;
+  line-height: 1.78;
+  max-width: 680px;
+  margin: 0 auto;
+  padding: var(--s7) var(--s4) var(--s8);
+  -webkit-font-smoothing: antialiased;
+}
+
+.tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68em;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: var(--s6);
+}
+
+h1 {
+  font-size: clamp(1.85rem, 6.5vw, 2.85rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.035em;
+  margin-bottom: var(--s5);
+}
+h2 {
+  font-size: 1.38rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+  margin-top: var(--s7);
+  margin-bottom: var(--s3);
+}
+p { margin-bottom: var(--s4); max-width: 60ch; }
+p:last-of-type { margin-bottom: 0; }
+em { font-style: italic; }
+strong { font-weight: 600; }
+
+hr { border: none; border-top: 1px solid var(--border); margin: var(--s6) 0; }
+
+.opening-line {
+  font-size: 1.12em;
+  font-weight: 500;
+  margin-bottom: var(--s5);
+  max-width: 52ch;
+  line-height: 1.5;
+}
+
+code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.82em;
+  background: var(--accent-dim);
+  color: var(--accent);
+  padding: 1px 6px;
+  border-radius: 3px;
+}
+pre {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78em;
+  background: var(--code-bg);
+  color: var(--code-text);
+  padding: var(--s4);
+  border-radius: 6px;
+  overflow-x: auto;
+  line-height: 1.75;
+  margin: var(--s5) 0;
+  border: 1px solid var(--border);
+}
+pre .hl  { color: var(--accent); font-weight: 500; }
+pre .dim { color: var(--muted); }
+
+/* ── Chips ── */
+.example-label {
+  font-size: 0.72em;
+  color: var(--muted);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-family: 'JetBrains Mono', monospace;
+  display: block;
+  margin-bottom: var(--s2);
+}
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s2);
+  margin-bottom: var(--s5);
+}
+.chip {
+  font-family: 'Satoshi', system-ui, sans-serif;
+  font-size: 0.82em;
+  font-weight: 500;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.18s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.chip:hover { border-color: var(--accent); color: var(--accent); }
+.chip.active { background: var(--accent-mid); border-color: var(--accent); color: var(--accent); }
+
+.example-box { transition: opacity 0.15s ease; }
+.example-box.fading { opacity: 0; }
+
+/* ── Callout ── */
+.callout {
+  border-left: 3px solid var(--accent);
+  padding: var(--s3) var(--s4);
+  margin: var(--s5) 0;
+  background: var(--accent-dim);
+  border-radius: 0 6px 6px 0;
+}
+.callout p { font-size: 1.05em; font-weight: 600; margin: 0; max-width: 100%; }
+
+/* ── Details ── */
+details {
+  margin: var(--s5) 0;
+  border-left: 2px solid var(--border);
+  padding-left: var(--s4);
+  transition: border-color 0.25s ease;
+}
+details[open] { border-left-color: var(--accent); }
+summary {
+  cursor: pointer;
+  list-style: none;
+  font-weight: 500;
+  font-size: 0.95em;
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  padding: var(--s2) 0;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+summary::-webkit-details-marker { display: none; }
+summary::before {
+  content: '▸';
+  font-size: 0.72em;
+  display: inline-block;
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+details[open] summary::before { transform: rotate(90deg); }
+.details-body { padding: var(--s4) 0 var(--s2); }
+.details-body p { font-size: 0.93em; margin-bottom: var(--s3); }
+
+/* ── Principles ── */
+.principles { list-style: none; margin-top: var(--s4); border-top: 1px solid var(--border); }
+.principles li {
+  padding: var(--s3) 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.87em;
+  line-height: 1.6;
+  display: grid;
+  grid-template-columns: 26px 1fr;
+  gap: 0 var(--s2);
+}
+.principles .num { font-family: 'JetBrains Mono', monospace; font-size: 0.85em; color: var(--accent); padding-top: 1px; }
+.principles .content strong { display: block; margin-bottom: 2px; }
+.principles .content span { color: var(--muted); }
+
+/* ── Arc ── */
+.arc { margin: var(--s5) 0; display: flex; flex-direction: column; gap: var(--s4); }
+.arc-item {
+  padding-left: var(--s4);
+  border-left: 2px solid var(--border);
+  font-size: 0.92em;
+  line-height: 1.65;
+}
+.arc-item .when {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75em;
+  color: var(--accent);
+  display: block;
+  margin-bottom: 4px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.arc-item .what { color: var(--text); }
+
+/* ── Paper ── */
+.paper-ref { font-size: 0.88em; line-height: 1.65; }
+.paper-ref strong { display: block; margin-bottom: var(--s2); }
+.paper-ref .authors { font-family: 'JetBrains Mono', monospace; font-size: 0.82em; color: var(--muted); margin-bottom: var(--s3); }
+.paper-link {
+  display: inline-block;
+  margin-top: var(--s2);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.82em;
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid var(--accent);
+  padding-bottom: 1px;
+}
+.paper-link:hover { opacity: 0.75; }
+
+.credibility {
+  font-size: 0.93em;
+  color: var(--muted);
+  font-style: italic;
+  margin: var(--s6) 0 var(--s5);
+  padding-left: var(--s4);
+  border-left: 2px solid var(--border);
+}
+
+/* ── Waitlist ── */
+.waitlist { margin-top: var(--s5); padding: var(--s5); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; }
+.waitlist h3 { font-size: 1.05em; font-weight: 600; margin-bottom: var(--s2); }
+.waitlist-sub { font-size: 0.88em; color: var(--muted); margin-bottom: var(--s4); display: block; }
+.waitlist-row { display: flex; gap: var(--s2); flex-wrap: wrap; }
+.waitlist-row input[type="email"] {
+  flex: 1; min-width: 200px;
+  background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
+  padding: 10px var(--s3);
+  font-family: 'Satoshi', system-ui, sans-serif; font-size: 0.95em; color: var(--text);
+  outline: none; transition: border-color 0.2s; -webkit-appearance: none;
+}
+.waitlist-row input:focus { border-color: var(--accent); }
+.waitlist-row input::placeholder { color: var(--muted); }
+.waitlist-row input.error { border-color: #c0392b; }
+.waitlist-row button {
+  background: var(--accent); color: #fff; border: none; border-radius: 6px;
+  padding: 10px var(--s4);
+  font-family: 'Satoshi', system-ui, sans-serif; font-size: 0.93em; font-weight: 600;
+  cursor: pointer; white-space: nowrap; transition: opacity 0.2s; -webkit-appearance: none;
+}
+.waitlist-row button:hover:not(:disabled) { opacity: 0.82; }
+.waitlist-row button:disabled { opacity: 0.55; cursor: default; }
+.waitlist-confirm { display: none; color: var(--accent); font-size: 0.93em; font-weight: 500; padding-top: var(--s3); }
+.waitlist-error { display: none; color: #c0392b; font-size: 0.85em; padding-top: var(--s2); }
+
+.meta {
+  margin-top: var(--s7); padding-top: var(--s5);
+  border-top: 1px solid var(--border);
+  font-size: 0.82em; color: var(--muted); line-height: 1.65; font-style: italic; max-width: 52ch;
+}
+
+@media (max-width: 480px) {
+  body    { padding: var(--s5) var(--s3) var(--s7); font-size: 17px; }
+  h1      { font-size: 1.7rem; margin-bottom: var(--s4); }
+  h2      { font-size: 1.18rem; margin-top: var(--s6); }
+  pre     { font-size: 0.7em; padding: var(--s3); }
+  .waitlist { padding: var(--s4); }
+  details { padding-left: var(--s3); }
+}
+</style>
+</head>
+<body>
+
+<span class="tag">HPAR &nbsp;·&nbsp; Hierarchical Path-Addressed Retrieval &nbsp;·&nbsp; CraftyCrow.co</span>
+
+<h1>Every business is leaking knowledge.<br>Silently. Expensively. Right now.</h1>
+
+<p class="opening-line">You've already paid for this knowledge. You just can't reach it.</p>
+
+<p>It's in emails, docs, chats, decisions, and lessons from mistakes nobody wrote down properly. It exists. You just can't find the right version, in the right place, when you actually need it.</p>
+<p>And when you do find something — you're not sure if it's still true.</p>
+
+<hr>
+
+<h2>This isn't a search problem.</h2>
+
+<p>You already have search. Google Drive, Notion, Slack, a CRM, an inbox.</p>
+<p>The problem isn't finding text. It's knowing what that text <em>means right now, in this situation.</em></p>
+
+<hr>
+
+<h2>Here's what it looks like in real life.</h2>
+
+<span class="example-label">Pick a scenario</span>
+<div class="chips">
+  <button class="chip active" onclick="switchExample('handover', this)">Team handover</button>
+  <button class="chip" onclick="switchExample('hospital', this)">Hospital</button>
+  <button class="chip" onclick="switchExample('policy', this)">Government policy</button>
+  <button class="chip" onclick="switchExample('hire', this)">New hire</button>
+</div>
+
+<div class="example-box" id="exampleBox">
+  <p id="exText1">Someone key leaves your team. They had everything in their head — the workarounds, the client history, the why behind every decision. You do a handover. Three weeks later you realise half of it is already gone.</p>
+  <p id="exText2">The knowledge existed. It just lived in one person, not in the system.</p>
+</div>
+
+<hr>
+
+<h2>The other half of the problem.</h2>
+
+<p>Things get busy. Activity picks up. Nobody is perfectly organised in the middle of it — and that's just human.</p>
+<p>So knowledge gets added roughly. Filed loosely. Placed wherever made sense in the moment. Over time, the system quietly falls apart. Not because people are careless. Because there was no system keeping it together.</p>
+
+<hr>
+
+<h2>What if the AI just kept it organised for you?</h2>
+
+<p>That's the idea behind HPAR.</p>
+<p>You add things roughly. It places them correctly — right spot, right category, right level of detail.</p>
+<p>You update one thing. It finds every place that concept lives and updates each one with the right language for that context.</p>
+
+<div class="callout"><p>One update. Everywhere it matters. Nothing missed. Nothing inconsistent.</p></div>
+
+<hr>
+
+<h2>Why a tree?</h2>
+
+<p>Because that's how knowledge actually works.</p>
+<p>Vision sits at the top. Strategy under that. Projects under that. Specific details at the bottom. Your business already thinks this way. HPAR makes it the structure the AI works inside.</p>
+<p>Every piece of knowledge gets a full address:</p>
+
+<pre id="pathExample">Company → People → Sarah → <span class="hl">Client Notes</span></pre>
+
+<p>That address isn't just a location. It's context. The AI knows exactly what role each node plays — because the full path above it is always visible.</p>
+<p>The AI doesn't read everything. The path tells it where it is. It zooms out for broader context, drills in for detail, moves sideways to find related things — in order of what matters most.</p>
+
+<pre id="treeExample">Company
+├── People
+│   └── Sarah
+│       └── <span class="hl">Client Notes</span>        <span class="dim">← canonical</span>
+├── CRM
+│   └── Acme Account            <span class="dim">← mirror</span>
+└── New Hire Handover
+    └── Key Contacts            <span class="dim">← mirror</span></pre>
+
+<p id="locationDesc">One person's knowledge. Three places it needed to live. One source of truth. When Sarah's context is updated, all three reflect it — each in the right language for its audience.</p>
+
+<details>
+  <summary>The twelve properties that make this work</summary>
+  <div class="details-body">
+    <p>These are the architectural building blocks. Each is useful alone. Together, they're what makes HPAR different from anything built before.</p>
+    <ul class="principles">
+      <li><span class="num">01</span><div class="content"><strong>Infinitely nestable tree</strong><span>No ceiling on depth or complexity. A solo operator or a government ministry — same structure, same logic.</span></div></li>
+      <li><span class="num">02</span><div class="content"><strong>Materialized paths</strong><span>Every node carries its full address. <code>Company → Policy → Refunds</code> is context, not just a label. The AI reads it like a signpost.</span></div></li>
+      <li><span class="num">03</span><div class="content"><strong>Structural locality</strong><span>Related things sit next to each other by design, not by search. The AI orients by position, not by scanning thousands of documents.</span></div></li>
+      <li><span class="num">04</span><div class="content"><strong>Abstraction gradient</strong><span>Broad at the top, specific at the bottom. Always. Going up means more general. Going down means more specific.</span></div></li>
+      <li><span class="num">05</span><div class="content"><strong>Bidirectional traversal</strong><span>Up for broader context, down for detail, sideways for related ideas — on demand. No re-querying. No guessing.</span></div></li>
+      <li><span class="num">06</span><div class="content"><strong>Hybrid retrieval</strong><span>Semantic search enters the right region. Structure navigates from there. Fast entry, precise movement.</span></div></li>
+      <li><span class="num">07</span><div class="content"><strong>Emergent naming</strong><span>Names come after contents are known, not before. Every label becomes a precise retrieval signal, not an early guess.</span></div></li>
+      <li><span class="num">08</span><div class="content"><strong>Mirrors + restructuring</strong><span>One concept, many locations, one source of truth. When it changes, all locations update automatically.</span></div></li>
+      <li><span class="num">09</span><div class="content"><strong>Concept-coherent propagation</strong><span>Not the same text pushed everywhere. The right expression of the change for each location — strategic where strategy lives, human where customers read.</span></div></li>
+      <li><span class="num">10</span><div class="content"><strong>Pointer-native references</strong><span>The tree is a map, not a warehouse. Videos, databases, live data — any node can point to them. Nothing left out. Nothing duplicated.</span></div></li>
+      <li><span class="num">11</span><div class="content"><strong>Importance-ordered siblings</strong><span>Within any group of related nodes, the most important one is always first. Critical context always surfaces before peripheral detail.</span></div></li>
+      <li><span class="num">12</span><div class="content"><strong>Continuous co-refinement</strong><span>The AI maintains and improves the structure over time. More knowledge → better organised → more connected → easier to find.</span></div></li>
+    </ul>
+  </div>
+</details>
+
+<hr>
+
+<h2>It compounds.</h2>
+
+<p>Most systems degrade. More content means more noise, more outdated things, more places to look.</p>
+<p>HPAR does the opposite.</p>
+
+<div class="arc">
+  <div class="arc-item">
+    <span class="when">Day one</span>
+    <span class="what" id="arcDay1">You capture what Sarah knows before her last day. It sits in one node.</span>
+  </div>
+  <div class="arc-item">
+    <span class="when">Month three</span>
+    <span class="what">200 nodes. The AI connects people, history, process, decisions. A question that took 20 minutes answers in seconds — because the structure already knows where everything relates.</span>
+  </div>
+  <div class="arc-item">
+    <span class="when">Year one</span>
+    <span class="what">A new hire asks a question. The AI finds the answer and surfaces three things they should also know. The senior person who used to field that question is now free to do something harder.</span>
+  </div>
+</div>
+
+<hr>
+
+<h2>Nothing gets left behind.</h2>
+
+<p>Big files. Videos. Databases. Live feeds. Any node in the tree can point to external data.</p>
+<p>You're not storing everything in one place. You're mapping where everything lives — and what it means in context. The tree is a map, not a warehouse.</p>
+
+<hr>
+
+<h2>The stakes are real.</h2>
+
+<p>A nurse working from an outdated protocol. The update went out three months ago. The old version was never retired. Nobody knew it was still in circulation.</p>
+<p>In a hospital, that gap isn't a process failure. It's irreversible.</p>
+<p>The same structural problem exists in every organisation that holds knowledge across teams, locations, and time. The cost just looks different.</p>
+<p>HPAR is designed for exactly this. From a solo consultant's working notes to an institution with thousands of people — same structure, same logic, same guarantee.</p>
+
+<hr>
+
+<h2>Why hasn't this existed before?</h2>
+
+<p>The structure is ancient. Outlines, hierarchies, trees — humans have organised knowledge this way for centuries.</p>
+<p>The AI that can maintain it, navigate it, and propagate changes across it intelligently — that's new. Very new.</p>
+<p>Nobody had put the two together. <br>Until now.</p>
+
+<hr>
+
+<h2>This is an open idea.</h2>
+
+<p>The architecture is published and free — read it, use it, build on it.</p>
+
+<details>
+  <summary>Read the full research paper</summary>
+  <div class="details-body">
+    <div class="paper-ref">
+      <strong>Hierarchical Path-Addressed Retrieval (HPAR):<br>A Position Paper on Structural Grounding for AI Agents</strong>
+      <div class="authors">Jeet Shah &nbsp;·&nbsp; J33T.pro &nbsp;·&nbsp; March 2026</div>
+      <p>The full architecture — all twelve properties, formal retrieval algorithm, and an honest comparison with flat RAG, GraphRAG, RAPTOR, and MemTree. Limitations and open questions included.</p>
+      <a class="paper-link" href="https://zenodo.org/records/19468206" target="_blank" rel="noopener">Read on Zenodo →</a>
+    </div>
+  </div>
+</details>
+
+<p class="credibility">This came from running a business, not from a lab. — Jeet Shah, CraftyCrow.co</p>
+
+<div class="waitlist">
+  <h3>Get early access</h3>
+  <span class="waitlist-sub">One tool. Everything your organisation knows — structured, connected, always current. Your own custom intelligence.</span>
+  <div class="waitlist-row" id="waitlistRow">
+    <input type="email" id="emailInput" placeholder="your@email.com" autocomplete="email">
+    <button id="submitBtn" onclick="handleWaitlist()">Join the waitlist</button>
+  </div>
+  <div class="waitlist-confirm" id="confirm">You're on the list. We'll be in touch.</div>
+  <div class="waitlist-error" id="wlError">Something went wrong. Please try again.</div>
+</div>
+
+<p class="meta">This page is built the way HPAR works. You started at the top — broad, simple, human. The detail was there when you wanted it, hidden when you didn't. You chose how deep to go. That's the whole idea.</p>
+
+<script>
+/* ── Example data ── */
+var ex = {
+  handover: {
+    t1:  'Someone key leaves your team. They had everything in their head — the workarounds, the client history, the why behind every decision. You do a handover. Three weeks later you realise half of it is already gone.',
+    t2:  'The knowledge existed. It just lived in one person, not in the system.',
+    path:'Company → People → Sarah → <span class="hl">Client Notes</span>',
+    tree:'Company\n├── People\n│   └── Sarah\n│       └── <span class="hl">Client Notes</span>        <span class="dim">← canonical</span>\n├── CRM\n│   └── Acme Account            <span class="dim">← mirror</span>\n└── New Hire Handover\n    └── Key Contacts            <span class="dim">← mirror</span>',
+    loc: "One person's knowledge. Three places it needed to live. One source of truth. When her context is updated, all three reflect it — each in the right language for its audience.",
+    arc: 'You capture what Sarah knows before her last day. It sits in one node.'
+  },
+  hospital: {
+    t1:  'A nurse follows a care protocol from last year. It was updated three months ago. Nobody flagged the old version. Nobody knew it was still in circulation.',
+    t2:  'In a hospital, that gap isn\'t a process failure. It\'s irreversible.',
+    path:'Hospital → Protocols → ICU → <span class="hl">Post-Op Care</span>',
+    tree:'Hospital\n├── Protocols\n│   └── ICU\n│       └── <span class="hl">Post-Op Care</span>         <span class="dim">← canonical</span>\n├── Ward B\n│   └── Nursing Checklist       <span class="dim">← mirror</span>\n└── Training\n    └── New Staff Guide         <span class="dim">← mirror</span>',
+    loc: 'One protocol. Three places it needed to live. One source of truth. When the protocol updates, all three reflect it — with the right detail for each audience.',
+    arc: 'You add the updated post-op protocol. It sits in one node.'
+  },
+  policy: {
+    t1:  'A policy changes at headquarters. It needs to update across twelve departments. Some get updated. Some don\'t. Six months later, a field officer follows the wrong version.',
+    t2:  'Nobody can say when it diverged.',
+    path:'Ministry → Policy → Benefits → <span class="hl">Eligibility</span>',
+    tree:'Ministry\n├── Policy\n│   └── Benefits\n│       └── <span class="hl">Eligibility</span>          <span class="dim">← canonical</span>\n├── Field Offices\n│   └── Officer Handbook        <span class="dim">← mirror</span>\n└── Website\n    └── Citizen FAQ             <span class="dim">← mirror</span>',
+    loc: 'One policy. Three places it needed to live. One source of truth. When the criteria change, all three update — in the right language for each audience.',
+    arc: 'You add the updated eligibility criteria. It sits in one node.'
+  },
+  hire: {
+    t1:  'A new hire follows the onboarding doc to the letter. Halfway through their first client call, they quote something the company stopped offering eight months ago.',
+    t2:  'The doc was never updated. Nobody noticed.',
+    path:'Company → Products → Starter Plan → <span class="hl">Pricing</span>',
+    tree:'Company\n├── Products\n│   └── Starter Plan\n│       └── <span class="hl">Pricing</span>             <span class="dim">← canonical</span>\n├── Sales\n│   └── Pitch Deck              <span class="dim">← mirror</span>\n└── Onboarding\n    └── New Hire Guide          <span class="dim">← mirror</span>',
+    loc: 'One price. Three places it needed to live. One source of truth. When the price changes, all three update — in the right language for each audience.',
+    arc: 'You add the current product pricing. It sits in one node.'
+  }
+};
+
+function switchExample(key, btn) {
+  var box  = document.getElementById('exampleBox');
+  var data = ex[key];
+  document.querySelectorAll('.chip').forEach(function(c){ c.classList.remove('active'); });
+  btn.classList.add('active');
+  box.classList.add('fading');
+  setTimeout(function() {
+    document.getElementById('exText1').textContent        = data.t1;
+    document.getElementById('exText2').textContent        = data.t2;
+    document.getElementById('pathExample').innerHTML      = data.path;
+    document.getElementById('treeExample').innerHTML      = data.tree;
+    document.getElementById('locationDesc').textContent   = data.loc;
+    document.getElementById('arcDay1').textContent        = data.arc;
+    box.classList.remove('fading');
+  }, 150);
+}
+
+/* ── Waitlist ──
+   TO ACTIVATE:
+   1. Go to formspree.io → sign up → New Form
+   2. Copy your form ID (e.g. xyzabc12)
+   3. Replace YOUR_FORM_ID below
+*/
+var FORMSPREE_ID = 'YOUR_FORM_ID';
+
+async function handleWaitlist() {
+  var input = document.getElementById('emailInput');
+  var btn   = document.getElementById('submitBtn');
+  var row   = document.getElementById('waitlistRow');
+  var ok    = document.getElementById('confirm');
+  var err   = document.getElementById('wlError');
+  input.classList.remove('error');
+  err.style.display = 'none';
+  if (!input.value || !input.value.includes('@')) {
+    input.classList.add('error'); input.focus(); return;
+  }
+  btn.textContent = 'Sending…'; btn.disabled = true;
+  try {
+    var res = await fetch('https://formspree.io/f/' + FORMSPREE_ID, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({ email: input.value })
+    });
+    if (res.ok) { row.style.display = 'none'; ok.style.display = 'block'; }
+    else throw new Error();
+  } catch(e) {
+    btn.textContent = 'Join the waitlist'; btn.disabled = false; err.style.display = 'block';
+  }
+}
+
+document.getElementById('emailInput').addEventListener('keydown', function(e){
+  if (e.key === 'Enter') handleWaitlist();
+});
+</script>
+</body>
+</html>
