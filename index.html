@@ -691,11 +691,11 @@ async function handleWaitlist() {
 
   try {
     var res = await fetch(
-      'https://crafty-form-server.fly.dev/api/incoming-webhook/5b6bb4191858cd539572bf8dccbf651c',
+      'https://crafty-form-server.fly.dev/api/incoming-webhook/9bb6e9bab86be9c54d6635f2ffa425c239a2a51f/7d67acef-2334-46f3-9d47-ee59c0c04c85',
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email_id_0: input.value })
+        body: JSON.stringify({ email_id_0_0: input.value })
       }
     );
 
@@ -718,7 +718,7 @@ async function handleWaitlist() {
 var prewarmed = false;
 function prewarm() {
   if (!prewarmed) {
-    fetch('https://crafty-form-server.fly.dev/api/incoming-webhook/5b6bb4191858cd539572bf8dccbf651c', {
+    fetch('https://crafty-form-server.fly.dev/api/incoming-webhook/9bb6e9bab86be9c54d6635f2ffa425c239a2a51f/7d67acef-2334-46f3-9d47-ee59c0c04c85', {
       method: 'HEAD'
     }).catch(function(){});
     prewarmed = true;
