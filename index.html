@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HPAR — Save once, update everywhere</title>
+<title>HPAR • Save once, update everywhere</title>
 
 <!-- SEO -->
 <meta name="description" content="HPAR is a new architecture for AI knowledge — structured, addressable, and self-maintaining. Every piece of knowledge knows where it lives. Update once, propagate everywhere.">
@@ -14,7 +14,7 @@
 <!-- Open Graph -->
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://hpar.j33t.pro">
-<meta property="og:title" content="HPAR — Save once, update everywhere">
+<meta property="og:title" content="HPAR • Save once, update everywhere">
 <meta property="og:description" content="Every business is leaking knowledge. Silently. Expensively. Continuously. HPAR is a new architecture that fixes this — for teams, hospitals, governments, and anyone who needs knowledge to stay true.">
 <meta property="og:image" content="https://hpar.j33t.pro/og.png">
 
@@ -22,7 +22,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:site" content="@j333t">
 <meta name="twitter:creator" content="@j333t">
-<meta name="twitter:title" content="HPAR — Save once, update everywhere">
+<meta name="twitter:title" content="HPAR • Save once, update everywhere">
 <meta name="twitter:description" content="Every business is leaking knowledge. Silently. Expensively. Continuously. HPAR is a new architecture that fixes this.">
 <meta name="twitter:image" content="https://hpar.j33t.pro/og.png">
 
@@ -52,8 +52,56 @@
   --s1:8px; --s2:12px; --s3:16px; --s4:24px;
   --s5:32px; --s6:48px; --s7:64px; --s8:96px;
 }
+
+.theme-toggle {
+  position: fixed;
+  top: var(--s4);
+  right: var(--s4);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.85em;
+  color: var(--muted);
+  transition: border-color 0.2s;
+  z-index: 100;
+  -webkit-tap-highlight-color: transparent;
+}
+.theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
+
+html[data-theme="dark"] {
+  --bg:         #0e0e0c;
+  --surface:    #171714;
+  --border:     #2c2c26;
+  --text:       #e8e3d8;
+  --muted:      #88837a;
+  --accent:     #72b87c;
+  --accent-dim: #72b87c10;
+  --accent-mid: #72b87c22;
+  --code-bg:    #191c16;
+  --code-text:  #8fd496;
+}
+
+html[data-theme="light"] {
+  --bg:         #f7f5f0;
+  --surface:    #edeae3;
+  --border:     #d8d3c8;
+  --text:       #1c1a17;
+  --muted:      #6e6a62;
+  --accent:     #00b050;
+  --accent-dim: #3d664410;
+  --accent-mid: #3d664425;
+  --code-bg:    #e6e2d8;
+  --code-text:  #356854;
+}
+
 @media (prefers-color-scheme: dark) {
-  :root {
+  html {
     --bg:         #0e0e0c;
     --surface:    #171714;
     --border:     #2c2c26;
@@ -108,6 +156,11 @@ p { margin-bottom: var(--s4); max-width: 60ch; }
 p:last-of-type { margin-bottom: 0; }
 em { font-style: italic; }
 strong { font-weight: 600; }
+
+::selection {
+  background: #72b87c40;
+  color: var(--text);
+}
 
 hr { border: none; border-top: 1px solid var(--border); margin: var(--s6) 0; }
 
@@ -236,6 +289,15 @@ details[open] summary::before { transform: rotate(90deg); }
 .principles .content strong { display: block; margin-bottom: 2px; }
 .principles .content span { color: var(--muted); }
 
+:target {
+  scroll-margin-top: var(--s7);
+  animation: highlight 4s ease;
+}
+@keyframes highlight {
+  0%   { background: #f5a62330; }
+  100% { background: transparent; }
+}
+
 /* ── Arc ── */
 .arc { margin: var(--s5) 0; display: flex; flex-direction: column; gap: var(--s4); }
 .arc-item {
@@ -320,6 +382,19 @@ details[open] summary::before { transform: rotate(90deg); }
   font-weight: 500;
 }
 
+.powered-by {
+  font-size: 0.75em;
+  color: var(--muted);
+  margin-top: var(--s2);
+  opacity: 0.6;
+}
+.powered-by a {
+  color: var(--muted);
+  text-decoration: none;
+  border-bottom: 1px solid var(--border);
+}
+.powered-by a:hover { opacity: 0.8; }
+
 @media (max-width: 480px) {
   body    { padding: var(--s5) var(--s3) var(--s7); font-size: 17px; }
   h1      { font-size: 1.7rem; margin-bottom: var(--s4); }
@@ -331,7 +406,9 @@ details[open] summary::before { transform: rotate(90deg); }
 </style>
 </head>
 <body>
-
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+  <span class="theme-icon">☀</span>
+</button>
 <span class="tag">HPAR &nbsp;·&nbsp; Hierarchical Path-Addressed Retrieval</span>
 
 <h1>Every business is leaking knowledge.<br>Silently. Expensively. <br>Continuously.</h1>
@@ -367,10 +444,10 @@ details[open] summary::before { transform: rotate(90deg); }
 
 <hr>
 
-<h2>The other half of the problem.</h2>
+<h2>The hard part.</h2>
 
-<p>Things get busy. Activity picks up. Nobody is perfectly organised in the middle of it — and that's just human.</p>
-<p>So knowledge gets added roughly. Filed loosely. Placed wherever made sense in the moment. Over time, the system quietly falls apart. Not because people are careless. Because there was no system keeping it together.</p>
+<p>Things get busy. The catch is that nobody can maintain this perfectly on their own. Knowledge get added roughly, filed loosely, placed wherever made sense in the moment.</p>
+<p>Over time, the system quietly falls apart. Not because people are careless, but because there was no system keeping it together.</p>
 
 <hr>
 
@@ -382,47 +459,46 @@ details[open] summary::before { transform: rotate(90deg); }
 
 <div class="callout"><p>Save once, update everywhere. Nothing missed. Nothing inconsistent.</p></div>
 
-<hr>
 
-<h2>Why this structure?</h2>
-
-<p>Because that's how knowledge actually works.</p>
-<p>Vision sits at the top. Strategy under that. Projects under that. Specific details at the bottom. Your business already thinks this way. HPAR makes it the structure the AI works inside.</p>
+<p>When you update your pricing, it shouldn't require manual updates in every place it is used. It should just update everywhere — correctly, in the right language for each place.</p>
 <p>Every piece of knowledge gets a full address:</p>
 
-<pre id="pathExample">Company → People → Sarah → <span class="hl">Client Notes</span></pre>
+<pre id="pathExample">Company → Products → Starter Plan → <span class="hl">Pricing</span></pre>
 
 <p>That address isn't just a location. It's context. The AI knows exactly what role each node plays — because the full path above it is always visible.</p>
-<p>The AI doesn't read everything. The path tells it where it is. It zooms out for broader context, drills in for detail, moves sideways to find related things — in order of what matters most.</p>
+<p>The AI doesn't read everything. The path tells it where it is. It zooms out for broader context, drills down for detail, moves sideways to find related things — in order of what matters most.</p>
+<p>That's how it knows exactly what needs to be updated: </p>
 
 <pre id="treeExample">Company
-├── People
-│   └── Sarah
-│       └── <span class="hl">Client Notes</span>        <span class="dim">← canonical</span>
-├── CRM
-│   └── Acme Account            <span class="dim">← mirror</span>
-└── New Hire Handover
-    └── Key Contacts            <span class="dim">← mirror</span></pre>
+├── Products
+│   └── Starter Plan
+│       └── <span class="hl">Pricing</span>             <span class="dim">← single input</span>
+├── Sales
+│   └── Pitch Deck              <span class="dim">← auto updated</span>
+├── Website
+│   └── Pricing Page            <span class="dim">← auto updated</span>
+└── Proposals
+    └── Standard Template       <span class="dim">← auto updated</span></pre>
 
-<p id="locationDesc">One person's knowledge. Three places it needed to live. One source of truth. When Sarah's context is updated, all three reflect it — each in the right language for its audience.</p>
+<p id="locationDesc">When pricing is updated in plans, every surface reflects it — each in the right language for its audience.</p>
 
 <details>
   <summary>The twelve properties that make this work</summary>
   <div class="details-body">
     <p>These are the architectural building blocks. Each is useful alone. Together, they're what makes HPAR different from anything built before.</p>
     <ul class="principles">
-      <li><span class="num">01</span><div class="content"><strong>Infinitely nestable tree</strong><span>No ceiling on depth or complexity. A solo operator or a government ministry — same structure, same logic.</span></div></li>
-      <li><span class="num">02</span><div class="content"><strong>Materialized paths</strong><span>Every node carries its full address. <code>Company → Policy → Refunds</code> is context, not just a label. The AI reads it like a signpost.</span></div></li>
-      <li><span class="num">03</span><div class="content"><strong>Structural locality</strong><span>Related things sit next to each other by design, not by search. The AI orients by position, not by scanning thousands of documents.</span></div></li>
-      <li><span class="num">04</span><div class="content"><strong>Abstraction gradient</strong><span>Broad at the top, specific at the bottom. Always. Going up means more general. Going down means more specific.</span></div></li>
-      <li><span class="num">05</span><div class="content"><strong>Bidirectional traversal</strong><span>Up for broader context, down for detail, sideways for related ideas — on demand. No re-querying. No guessing.</span></div></li>
-      <li><span class="num">06</span><div class="content"><strong>Hybrid retrieval</strong><span>Semantic search enters the right region. Structure navigates from there. Fast entry, precise movement.</span></div></li>
-      <li><span class="num">07</span><div class="content"><strong>Emergent naming</strong><span>Names come after contents are known, not before. Every label becomes a precise retrieval signal, not an early guess.</span></div></li>
-      <li><span class="num">08</span><div class="content"><strong>Mirrors + restructuring</strong><span>One concept, many locations, one source of truth. When it changes, all locations update automatically.</span></div></li>
-      <li><span class="num">09</span><div class="content"><strong>Concept-coherent propagation</strong><span>Not the same text pushed everywhere. The right expression of the change for each location — strategic where strategy lives, human where customers read.</span></div></li>
-      <li><span class="num">10</span><div class="content"><strong>Pointer-native references</strong><span>The tree is a map, not a warehouse. Videos, databases, live data — any node can point to them. Nothing left out. Nothing duplicated.</span></div></li>
-      <li><span class="num">11</span><div class="content"><strong>Importance-ordered siblings</strong><span>Within any group of related nodes, the most important one is always first. Critical context always surfaces before peripheral detail.</span></div></li>
-      <li><span class="num">12</span><div class="content"><strong>Continuous co-refinement</strong><span>The AI maintains and improves the structure over time. More knowledge → better organised → more connected → easier to find.</span></div></li>
+      <li id="1"><span class="num">01</span><div class="content"><strong>Infinitely nestable tree</strong><span>No ceiling on depth or complexity. A solo operator or a government ministry — same structure, same logic.</span></div></li>
+      <li id="2"><span class="num">02</span><div class="content"><strong>Materialized paths</strong><span>Every node carries its full address. <code>Company → Policy → Refunds</code> is context, not just a label. The AI reads it like a signpost.</span></div></li>
+      <li id="3"><span class="num">03</span><div class="content"><strong>Structural locality</strong><span>Related things sit next to each other by design, not by search. The AI orients by position, not by scanning thousands of documents.</span></div></li>
+      <li id="4"><span class="num">04</span><div class="content"><strong>Abstraction gradient</strong><span>Broad at the top, specific at the bottom. Always. Going up means more general. Going down means more specific.</span></div></li>
+      <li id="5"><span class="num">05</span><div class="content"><strong>Bidirectional traversal</strong><span>Up for broader context, down for detail, sideways for related ideas — on demand. No re-querying. No guessing.</span></div></li>
+      <li id="6"><span class="num">06</span><div class="content"><strong>Hybrid retrieval</strong><span>Semantic search enters the right region. Structure navigates from there. Fast entry, precise movement.</span></div></li>
+      <li id="7"><span class="num">07</span><div class="content"><strong>Emergent naming</strong><span>Names come after contents are known, not before. Every label becomes a precise retrieval signal, not an early guess.</span></div></li>
+      <li id="8"><span class="num">08</span><div class="content"><strong>Mirrors + restructuring</strong><span>One concept, many locations, one source of truth. When it changes, all locations update automatically.</span></div></li>
+      <li id="9"><span class="num">09</span><div class="content"><strong>Concept-coherent propagation</strong><span>Not the same text pushed everywhere. The right expression of the change for each location — strategic where strategy lives, human where customers read.</span></div></li>
+      <li id="10"><span class="num">10</span><div class="content"><strong>Pointer-native references</strong><span>The tree is a map, not a warehouse. Videos, databases, live data — any node can point to them. Nothing left out. Nothing duplicated.</span></div></li>
+      <li id="11"><span class="num">11</span><div class="content"><strong>Importance-ordered siblings</strong><span>Within any group of related nodes, the most important one is always first. Critical context always surfaces before peripheral detail.</span></div></li>
+      <li id="12"><span class="num">12</span><div class="content"><strong>Continuous co-refinement</strong><span>The AI maintains and improves the structure over time. More knowledge → better organised → more connected → easier to find.</span></div></li>
     </ul>
   </div>
 </details>
@@ -503,11 +579,18 @@ details[open] summary::before { transform: rotate(90deg); }
   </div>
   <div class="waitlist-confirm" id="confirm">You're on the list. We'll be in touch.</div>
   <div class="waitlist-error" id="wlError">Something went wrong. Please try again.</div>
+  <p class="powered-by">Waitlist powered by <a href="#" target="_blank" rel="noopener">CraftyForms</a></p>
 </div>
 
 <p class="meta">This page is built the way HPAR works. You started at the top — broad, simple, human. The detail was there when you wanted it, hidden when you didn't. You chose how deep to go. That's the whole idea.</p>
 
 <script>
+  // ── Theme switcher ──
+(function() {
+  var saved = localStorage.getItem('theme');
+  if (saved) document.documentElement.setAttribute('data-theme', saved);
+})();
+
 // ── Waitlist count ──
 async function loadCount() {
   try {
@@ -635,6 +718,37 @@ function prewarm() {
 document.getElementById('emailInput').addEventListener('focus', prewarm);
 document.getElementById('emailInput').addEventListener('keydown', function(e){
   prewarm();
+  if (e.key === 'Enter') handleWaitlist();
+});
+
+
+if (window.location.hash) {
+  var el = document.querySelector(window.location.hash);
+  if (el) {
+    var details = el.closest('details');
+    if (details) details.open = true;
+    setTimeout(function() { el.scrollIntoView({ behavior: 'smooth' }); }, 100);
+  }
+}
+
+function getTheme() {
+  var saved = localStorage.getItem('theme');
+  if (saved) return saved;
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
+function updateIcon() {
+  document.querySelector('.theme-icon').textContent = getTheme() === 'dark' ? '☀' : '☽';
+}
+
+document.getElementById('themeToggle').addEventListener('click', function() {
+  var next = getTheme() === 'dark' ? 'light' : 'dark';
+  localStorage.setItem('theme', next);
+  document.documentElement.setAttribute('data-theme', next);
+  updateIcon();
+});
+
+updateIcon();
 </script>
 </body>
 </html>
