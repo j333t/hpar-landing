@@ -519,7 +519,7 @@ async function loadCount() {
       }
     });
     var count = (await res.json()).length;
-    if (count >= 25) {
+    if (count >= 2) {
       var el = document.getElementById('waitlistCount');
       el.textContent = count + ' people signed up already.';
       el.style.display = 'block';
@@ -595,24 +595,15 @@ async function handleWaitlist() {
     input.classList.add('error'); input.focus(); return;
   }
 
-  btn.textContent = 'Sending…'; btn.disabled = true;
+  btn.textContent = 'Just a moment…'; btn.disabled = true;
 
   try {
     var res = await fetch(
-      'https://jfesmgpxeiyjanmezwip.supabase.co/rest/v1/form_submissions?columns=%22process_id%22%2C%22data%22%2C%22form_id%22&select=id',
+      'https://crafty-form-server.fly.dev/api/incoming-webhook/5b6bb4191858cd539572bf8dccbf651c',
       {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'apikey': 'sb_publishable_FUT9Y79jji-rsFwmIoPhgw_iRhiLkWM',
-          'Authorization': 'Bearer sb_publishable_FUT9Y79jji-rsFwmIoPhgw_iRhiLkWM'
-        },
-        body: JSON.stringify([{
-          process_id: null,
-          data: { email_id_0: input.value },
-          form_id: 'a141d394-5cba-4d66-bee3-0978f691235b'
-        }])
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email_id_0: input.value })
       }
     );
 
@@ -632,7 +623,14 @@ async function handleWaitlist() {
   }
 }
 
+var prewarmed = false;
 document.getElementById('emailInput').addEventListener('keydown', function(e){
+  if (!prewarmed) {
+    fetch('https://crafty-form-server.fly.dev/api/incoming-webhook/5b6bb4191858cd539572bf8dccbf651c', {
+      method: 'HEAD'
+    }).catch(function(){});
+    prewarmed = true;
+  }
   if (e.key === 'Enter') handleWaitlist();
 });
 </script>
