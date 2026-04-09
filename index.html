@@ -587,31 +587,48 @@ async function handleWaitlist() {
   var row   = document.getElementById('waitlistRow');
   var ok    = document.getElementById('confirm');
   var err   = document.getElementById('wlError');
+
   input.classList.remove('error');
   err.style.display = 'none';
+
   if (!input.value || !input.value.includes('@')) {
     input.classList.add('error'); input.focus(); return;
   }
+
   btn.textContent = 'Sending…'; btn.disabled = true;
+
   try {
-    var res = await fetch('https://jfesmgpxeiyjanmezwip.supabase.co/rest/v1/form_submissions?columns=%22process_id%22%2C%22data%22%2C%22form_id%22&select=id', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'apikey': 'sb_publishable_FUT9Y79jji-rsFwmIoPhgw_iRhiLkWM',
-        'Authorization': 'Bearer sb_publishable_FUT9Y79jji-rsFwmIoPhgw_iRhiLkWM'
-      },
-      body: JSON.stringify([{
-        process_id: null,
-        data: { email_id_0: input.value },
-        form_id: 'a141d394-5cba-4d66-bee3-0978f691235b'
-      }])
-    });
-    if (res.ok) { row.style.display = 'none'; ok.style.display = 'block'; }
-    else throw new Error();
+    var res = await fetch(
+      'https://jfesmgpxeiyjanmezwip.supabase.co/rest/v1/form_submissions?columns=%22process_id%22%2C%22data%22%2C%22form_id%22&select=id',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'apikey': 'sb_publishable_FUT9Y79jji-rsFwmIoPhgw_iRhiLkWM',
+          'Authorization': 'Bearer sb_publishable_FUT9Y79jji-rsFwmIoPhgw_iRhiLkWM'
+        },
+        body: JSON.stringify([{
+          process_id: null,
+          data: { email_id_0: input.value },
+          form_id: 'a141d394-5cba-4d66-bee3-0978f691235b'
+        }])
+      }
+    );
+
+    if (res.ok) {
+      row.style.display = 'none';
+      ok.style.display  = 'block';
+    } else {
+      // Log the actual error from Supabase
+      var body = await res.json();
+      console.error('Supabase error:', res.status, body);
+      throw new Error();
+    }
   } catch(e) {
-    btn.textContent = 'Join the waitlist'; btn.disabled = false; err.style.display = 'block';
+    btn.textContent = 'Join the waitlist';
+    btn.disabled = false;
+    err.style.display = 'block';
   }
 }
 
