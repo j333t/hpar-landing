@@ -519,7 +519,7 @@ async function loadCount() {
       }
     });
     var count = (await res.json()).length;
-    if (count >= 2) {
+    if (count >= 25) {
       var el = document.getElementById('waitlistCount');
       el.textContent = count + ' people signed up already.';
       el.style.display = 'block';
@@ -624,15 +624,17 @@ async function handleWaitlist() {
 }
 
 var prewarmed = false;
-document.getElementById('emailInput').addEventListener('keydown', function(e){
+function prewarm() {
   if (!prewarmed) {
     fetch('https://crafty-form-server.fly.dev/api/incoming-webhook/5b6bb4191858cd539572bf8dccbf651c', {
       method: 'HEAD'
     }).catch(function(){});
     prewarmed = true;
   }
-  if (e.key === 'Enter') handleWaitlist();
-});
+}
+document.getElementById('emailInput').addEventListener('focus', prewarm);
+document.getElementById('emailInput').addEventListener('keydown', function(e){
+  prewarm();
 </script>
 </body>
 </html>
