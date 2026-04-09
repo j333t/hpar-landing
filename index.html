@@ -686,7 +686,7 @@ async function handleWaitlist() {
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email_id_0: input.value })
+        body: JSON.stringify({ data: { email_id_0: input.value } })
       }
     );
 
