@@ -4,6 +4,33 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>HPAR — Save once, update everywhere</title>
+
+<!-- SEO -->
+<meta name="description" content="HPAR is a new architecture for AI knowledge — structured, addressable, and self-maintaining. Every piece of knowledge knows where it lives. Update once, propagate everywhere.">
+<meta name="author" content="Jeet Shah">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://hpar.j33t.pro">
+
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://hpar.j33t.pro">
+<meta property="og:title" content="HPAR — Save once, update everywhere">
+<meta property="og:description" content="Every business is leaking knowledge. Silently. Expensively. Continuously. HPAR is a new architecture that fixes this — for teams, hospitals, governments, and anyone who needs knowledge to stay true.">
+<meta property="og:image" content="https://hpar.j33t.pro/og.png">
+
+<!-- Twitter / X -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@j333t">
+<meta name="twitter:creator" content="@j333t">
+<meta name="twitter:title" content="HPAR — Save once, update everywhere">
+<meta name="twitter:description" content="Every business is leaking knowledge. Silently. Expensively. Continuously. HPAR is a new architecture that fixes this.">
+<meta name="twitter:image" content="https://hpar.j33t.pro/og.png">
+
+<!-- Favicon -->
+<link rel="icon" href="/favicon.svg">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+<!-- Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -285,6 +312,14 @@ details[open] summary::before { transform: rotate(90deg); }
   font-size: 0.82em; color: var(--muted); line-height: 1.65; font-style: italic; max-width: 52ch;
 }
 
+.waitlist-count {
+  font-size: 0.82em;
+  color: var(--accent);
+  margin-bottom: var(--s3);
+  display: none;
+  font-weight: 500;
+}
+
 @media (max-width: 480px) {
   body    { padding: var(--s5) var(--s3) var(--s7); font-size: 17px; }
   h1      { font-size: 1.7rem; margin-bottom: var(--s4); }
@@ -435,7 +470,7 @@ details[open] summary::before { transform: rotate(90deg); }
 <h2>Why hasn't this existed before?</h2>
 
 <p>The structure is ancient. Outlines, hierarchies, trees — humans have organised knowledge this way for centuries.</p>
-<p>The AI that can maintain it, navigate it, and propagate changes across it intelligently — that's new. Very new.</p>
+<p>The AI that can maintain it, navigate it, and propagate changes across it intelligently — that's new. Very new. HPAR gives it a better home.</p>
 <p>Nobody had put the two together. <br>Until now.</p>
 
 <hr>
@@ -460,6 +495,7 @@ details[open] summary::before { transform: rotate(90deg); }
 
 <div class="waitlist">
   <h3>Get early access</h3>
+  <div class="waitlist-count" id="waitlistCount"></div>
   <span class="waitlist-sub">One tool. Everything your organisation knows — structured, connected, always current. Your own custom intelligence.</span>
   <div class="waitlist-row" id="waitlistRow">
     <input type="email" id="emailInput" placeholder="your@email.com" autocomplete="email">
@@ -472,8 +508,28 @@ details[open] summary::before { transform: rotate(90deg); }
 <p class="meta">This page is built the way HPAR works. You started at the top — broad, simple, human. The detail was there when you wanted it, hidden when you didn't. You chose how deep to go. That's the whole idea.</p>
 
 <script>
-/* ── Example data ── */
-var ex = {
+// ── Waitlist count ──
+async function loadCount() {
+  try {
+    var res = await fetch('https://jfesmgpxeiyjanmezwip.supabase.co/rest/v1/form_submissions?form_id=eq.a141d394-5cba-4d66-bee3-0978f691235b&select=id', {
+      headers: {
+        'apikey': 'sb_publishable_FUT9Y79jji-rsFwmIoPhgw_iRhiLkWM',
+        'Authorization': 'Bearer sb_publishable_FUT9Y79jji-rsFwmIoPhgw_iRhiLkWM',
+        'Prefer': 'count=exact'
+      }
+    });
+    var count = (await res.json()).length;
+    if (count >= 25) {
+      var el = document.getElementById('waitlistCount');
+      el.textContent = count + ' people signed up already.';
+      el.style.display = 'block';
+    }
+  } catch(e) {}
+}
+loadCount();
+
+
+
   handover: {
     t1:  'Someone key leaves your team. They had everything in their head — the workarounds, the client history, the why behind every decision. You do a handover. Three weeks later you realise half of it is already gone.',
     t2:  'The knowledge existed. It just lived in one person, not in the system.',
@@ -525,14 +581,6 @@ function switchExample(key, btn) {
   }, 150);
 }
 
-/* ── Waitlist ──
-   TO ACTIVATE:
-   1. Go to formspree.io → sign up → New Form
-   2. Copy your form ID (e.g. xyzabc12)
-   3. Replace YOUR_FORM_ID below
-*/
-var FORMSPREE_ID = 'YOUR_FORM_ID';
-
 async function handleWaitlist() {
   var input = document.getElementById('emailInput');
   var btn   = document.getElementById('submitBtn');
@@ -546,10 +594,19 @@ async function handleWaitlist() {
   }
   btn.textContent = 'Sending…'; btn.disabled = true;
   try {
-    var res = await fetch('https://formspree.io/f/' + FORMSPREE_ID, {
+    var res = await fetch('https://jfesmgpxeiyjanmezwip.supabase.co/rest/v1/form_submissions?columns=%22process_id%22%2C%22data%22%2C%22form_id%22&select=id', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body: JSON.stringify({ email: input.value })
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'apikey': 'sb_publishable_FUT9Y79jji-rsFwmIoPhgw_iRhiLkWM',
+        'Authorization': 'Bearer sb_publishable_FUT9Y79jji-rsFwmIoPhgw_iRhiLkWM'
+      },
+      body: JSON.stringify([{
+        process_id: null,
+        data: { email_id_0: input.value },
+        form_id: 'a141d394-5cba-4d66-bee3-0978f691235b'
+      }])
     });
     if (res.ok) { row.style.display = 'none'; ok.style.display = 'block'; }
     else throw new Error();
